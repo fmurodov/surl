@@ -1,3 +1,5 @@
+[![golangci-lint](https://github.com/firdavsich/surl/actions/workflows/lint.yml/badge.svg)](https://github.com/firdavsich/surl/actions/workflows/lint.yml)
+
 # surl
 URL shortener api
 
