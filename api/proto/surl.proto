@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+// option go_package = "github.com/firdavsich/surl";
+package surl;
+
+service Create {
+    rpc Add(AddRequest) returns (AddResponse) {}
+}
+
+service Get {
+    rpc Get(GetRequest) returns (GetResponse) {}
+}
+
+message AddRequest {
+    string original = 1;
+}
+
+message AddResponse {
+    string short = 1;
+}
+
+message GetRequest {
+    string short = 1;
+}
+
+message GetResponse {
+    string original = 1;
+}
