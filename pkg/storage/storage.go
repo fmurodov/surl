@@ -1,9 +1,11 @@
-package main
+package storage
 
 import (
 	"database/sql"
+)
 
-	"github.com/firdavsich/surl/random"
+const (
+	baseURL = "http://www.surl.com/"
 )
 
 // get url from postgres
@@ -16,7 +18,7 @@ func Get(db *sql.DB, hash string) (string, error) {
 // add url to postgres
 func Add(db *sql.DB, url string) (string, error) {
 
-	hash := random.RandString()
+	hash := RandString()
 	_, err := db.Exec("INSERT INTO surl (url,hash) VALUES ($1,$2)", url, hash)
 	if err != nil {
 		err = db.QueryRow("SELECT hash FROM surl WHERE url = $1", url).Scan(&hash)
