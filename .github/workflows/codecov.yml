@@ -13,10 +13,6 @@ jobs:
         with:
           go-version: "1.17"
       - name: Run coverage
-        run: go test -race -coverprofile=coverage.txt -covermode=atomic
-        with:
-          working-directory: cmd/server
+        run: cd cmd/server && go test -race -coverprofile=coverage.txt -covermode=atomic
       - name: Upload coverage to Codecov
-        run: bash <(curl -s https://codecov.io/bash)
-        with:
-          working-directory: cmd/server
+        run: cd cmd/server && bash <(curl -s https://codecov.io/bash)
