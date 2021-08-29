@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -16,6 +17,15 @@ import (
 	"google.golang.org/grpc"
 )
 
+type dbConfig struct {
+	User     string
+	Password string
+	DB       string
+	Host     string
+	Port     string
+	SSL      string
+}
+
 type GPRCServer struct {
 	api.SurlServer
 	db         *sql.DB
@@ -24,8 +34,8 @@ type GPRCServer struct {
 }
 
 func (s *GPRCServer) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
+	log.Println(req.GetUrl())
 	result, err := storage.Add(s.db, req.GetUrl())
-	log.Println(result)
 	if err != nil {
 		log.Print(err)
 		return &api.CreateResponse{Shorturl: ""}, err
@@ -34,9 +44,9 @@ func (s *GPRCServer) Create(ctx context.Context, req *api.CreateRequest) (*api.C
 }
 
 func (s *GPRCServer) Get(ctx context.Context, req *api.GetRequest) (*api.GetResponse, error) {
+	log.Println(req.GetShorturl())
 	hash := strings.TrimPrefix(req.GetShorturl(), s.baseURL)
 	result, err := storage.Get(s.db, hash)
-	log.Println(result)
 	if err != nil {
 		log.Print(err)
 		return &api.GetResponse{Url: ""}, err
@@ -45,26 +55,40 @@ func (s *GPRCServer) Get(ctx context.Context, req *api.GetRequest) (*api.GetResp
 	return &api.GetResponse{Url: result}, nil
 }
 
+// get env or default value
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
+}
+
 func main() {
+	dbConfig := dbConfig{
+		User:     getEnv("DB_USER", "postgres"),
+		Password: getEnv("DB_PASSWORD", "postgres"),
+		DB:       getEnv("DB_NAME", "postgres"),
+		Host:     getEnv("DB_HOST", "localhost"),
+		Port:     getEnv("DB_PORT", "5432"),
+		SSL:      getEnv("DB_SSLMODE", "disable"),
+	}
+	dbConection := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s password=%s",
+		dbConfig.Host,
+		dbConfig.Port,
+		dbConfig.User,
+		dbConfig.DB,
+		dbConfig.SSL,
+		dbConfig.Password)
 
 	var err error // ! FIXME: remove
 	s := grpc.NewServer()
 	srv := &GPRCServer{}
-
-	// get application port from environment variable
-	if len(os.Getenv("PORT")) == 0 {
-		srv.listenPort = "8080"
-	} else {
-		srv.listenPort = os.Getenv("PORT")
-	}
-	if len(os.Getenv("BASE_URL")) == 0 {
-		srv.baseURL = "http://localhost:8080/"
-	} else {
-		srv.baseURL = os.Getenv("BASE_URL")
-	}
+	srv.baseURL = getEnv("BASE_URL", "http://localhost:8080/")
+	srv.listenPort = getEnv("PORT", "8080")
 
 	// open connect to postgresql
-	srv.db, err = sql.Open("postgres", "host=localhost port=5432 user=surl dbname=surl_db sslmode=disable password=surl")
+	srv.db, err = sql.Open("postgres", dbConection)
 	if err != nil {
 		log.Fatal(err)
 	}
