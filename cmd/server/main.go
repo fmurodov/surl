@@ -84,7 +84,7 @@ func main() {
 	var err error // ! FIXME: remove
 	s := grpc.NewServer()
 	srv := &GPRCServer{}
-	srv.baseURL = getEnv("BASE_URL", "http://localhost:8080/")
+	srv.baseURL = getEnv("BASE_URL", "http://localhost:8080/") + "/"
 	srv.listenPort = getEnv("PORT", "8080")
 
 	// open connect to postgresql

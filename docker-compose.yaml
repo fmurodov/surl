@@ -1,6 +1,21 @@
 version: '3.1'
 
 services:
+  surl:
+    build: .
+    ports:
+      - "8080:8080"
+    links: 
+      - db
+    environment: 
+      PORT: "8080"
+      BASE_URL: "http://localhost:8080"
+      DB_USER: "postgres"
+      DB_PASSWORD: "wMMPuTsvoXthu3fg"
+      DB_NAME: "postgres"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+
 
   db:
     image: postgres:alpine
@@ -9,3 +24,6 @@ services:
       POSTGRES_PASSWORD: wMMPuTsvoXthu3fg
     ports:
     - 5432:5432
+    volumes:
+      - ./migration/initial_schema.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db_data:/var/lib/postgresql/data 

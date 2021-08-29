@@ -1,18 +1,20 @@
 [![golangci-lint](https://github.com/firdavsich/surl/actions/workflows/lint.yml/badge.svg)](https://github.com/firdavsich/surl/actions/workflows/lint.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/firdavsich/surl)](https://goreportcard.com/report/github.com/firdavsich/surl)
+[![codecov](https://codecov.io/gh/firdavsich/surl/branch/master/graph/badge.svg?token=S70X7FR02U)](https://codecov.io/gh/firdavsich/surl)
 
 # surl
-URL shortener api
+URL shortener app with gRPC and PostgreSQL 
 
 
-### DB init
+### Usage
+#### Clone repo:
+```
+git clone https://github.com/firdavsich/surl
 
 ```
-CREATE USER surl WITH ENCRYPTED PASSWORD 'surl';
-CREATE DATABASE surl_db;
-GRANT ALL PRIVILEGES ON DATABASE surl_db TO surl;
-CREATE TABLE surl (
-    id SERIAL PRIMARY KEY,
-    url VARCHAR(2048) NOT NULL,
-    hash VARCHAR(10) NOT NULL
-);
+
+#### Build and run
+```
+cd surl
+docker-compose up -d --build
 ```
