@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"database/sql"
-	"github.com/firdavsich/surl/pkg/storage"
 	"log"
 	"net"
-	"context"
+
+	"github.com/firdavsich/surl/pkg/storage"
 
 	_ "github.com/lib/pq"
 
@@ -13,19 +14,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-
-type GPRCServer struct{
+type GPRCServer struct {
 	api.SurlServer
-
+	db *sql.DB
 }
 
-var db, _= sql.Open("postgres", "postgres://surl:surl@localhost/surl_db?sslmode=disable")
-
-
 func (s *GPRCServer) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
-	result, err:=storage.Add(db, req.GetUrl())
+	result, err := storage.Add(s.db, req.GetUrl())
 	log.Println(result)
-	if err != nil{
+	if err != nil {
 		log.Print(err)
 		return &api.CreateResponse{Shorturl: ""}, err
 	}
@@ -33,9 +30,9 @@ func (s *GPRCServer) Create(ctx context.Context, req *api.CreateRequest) (*api.C
 }
 
 func (s *GPRCServer) Get(ctx context.Context, req *api.GetRequest) (*api.GetResponse, error) {
-	result, err:=storage.Get(db, req.GetShorturl())
+	result, err := storage.Get(s.db, req.GetShorturl())
 	log.Println(result)
-	if err != nil{
+	if err != nil {
 		log.Print(err)
 		return &api.GetResponse{Url: ""}, err
 	}
@@ -43,12 +40,18 @@ func (s *GPRCServer) Get(ctx context.Context, req *api.GetRequest) (*api.GetResp
 	return &api.GetResponse{Url: result}, nil
 }
 
-
 func main() {
-	// open connect to postgresql
-
+	var err error // ! FIXME: remove
 	s := grpc.NewServer()
 	srv := &GPRCServer{}
+
+	// open connect to postgresql
+	srv.db, err = sql.Open("postgres", "postgres://surl:surl@localhost:5432/surl_db?sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer srv.db.Close()
+
 	api.RegisterSurlServer(s, srv)
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
