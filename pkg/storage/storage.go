@@ -4,10 +4,6 @@ import (
 	"database/sql"
 )
 
-const (
-	baseURL = "http://www.surl.com/"
-)
-
 // get url from postgres
 func Get(db *sql.DB, hash string) (string, error) {
 	var url string
@@ -23,5 +19,5 @@ func Add(db *sql.DB, url string) (string, error) {
 	if err != nil {
 		err = db.QueryRow("SELECT hash FROM surl WHERE url = $1", url).Scan(&hash)
 	}
-	return baseURL + hash, err
+	return hash, err
 }
