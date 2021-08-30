@@ -12,7 +12,11 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: "1.17"
-      - name: Run coverage
+      - name: Run coverage cmd/main
         run: cd cmd/server && go test -race -coverprofile=coverage.txt -covermode=atomic
-      - name: Upload coverage to Codecov
+      - name: Run coverage pkg/storage
+        run: cd pkg/storage && go test -race -coverprofile=coverage.txt -covermode=atomic
+      - name: Upload coverage to Codecov cmd/main
         run: cd cmd/server && bash <(curl -s https://codecov.io/bash)
+      - name: Upload coverage to Codecov pkg/storage
+        run: cd pkg/storage && bash <(curl -s https://codecov.io/bash)
